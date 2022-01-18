@@ -5,14 +5,13 @@
     android:layout_height="wrap_content"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:padding="10dp">
+    android:padding="20dp">
 
 
     <ImageView
         android:id="@+id/iv_add"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:padding="5dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:src="@mipmap/add" />
 
 
@@ -25,8 +24,14 @@
 
     <ImageView
         android:id="@+id/iv_fun"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:padding="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:src="@mipmap/icon_play" />
+
+    <ImageView
+        android:id="@+id/iv_stop"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@mipmap/icon_puse" />
 </LinearLayout>

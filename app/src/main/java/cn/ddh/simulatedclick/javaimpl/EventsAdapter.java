@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -45,6 +46,12 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.ViewHolder
         }else{
             holder.textView.setTextColor(context.getResources().getColor(R.color.black));
         }
+        holder.textView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(context,eventBase.getName(),Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
@@ -56,7 +63,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.ViewHolder
 
         TextView textView;
 
-        public ViewHolder(@NonNull View itemView) {
+        ViewHolder(@NonNull View itemView) {
             super(itemView);
             textView = itemView.findViewById(R.id.tv_content);
         }

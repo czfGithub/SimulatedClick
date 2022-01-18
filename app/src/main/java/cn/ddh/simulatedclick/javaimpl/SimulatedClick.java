@@ -7,33 +7,83 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import cn.ddh.simulatedclick.R;
+import cn.ddh.simulatedclick.event.EventBase;
 
-public class SimulatedClick extends Activity {
+public class SimulatedClick extends Activity implements View.OnTouchListener {
 
     private final int REQUEST_CODE = 2001;
 
+    private RecyclerView rvContent;
     private TextView textView;
+    private LinearLayoutManager linearLayoutManager;
+    private List<EventBase> eventList;
+    private EventsAdapter eventAdapter;
+
+    private int index = 0;
+    private Handler handler = new Handler();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        rvContent = findViewById(R.id.rv_content);
         textView = findViewById(R.id.tv_show);
+        eventList = new ArrayList<>();
+        eventAdapter = new EventsAdapter(this, eventList);
+        linearLayoutManager = new LinearLayoutManager(this, RecyclerView.VERTICAL, false);
+        rvContent.setLayoutManager(linearLayoutManager);
+        rvContent.setAdapter(eventAdapter);
+        rvContent.setOnTouchListener(this);
+        initData();
         if(getFloat()){
             checkAccessibility();
         }else{
             startSetting();
         }
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if(index >= 0 && index < eventList.size()){
+                    eventList.get(index++).setTasking();
+//                    Toast.makeText(SimulatedClick.this,index + ":" + linearLayoutManager.findLastVisibleItemPosition(),Toast.LENGTH_SHORT).show();
+                    if(index > linearLayoutManager.findLastVisibleItemPosition()){
+                        rvContent.scrollToPosition(index);
+                    }
+                    eventAdapter.notifyDataSetChanged();
+                    handler.postDelayed(this,1000);
+                }else{
+                    index = 0;
+                    for(int i = 0; i < eventList.size(); i++){
+                        eventList.get(i).setTasking(false);
+                    }
+                    rvContent.scrollToPosition(index);
+                    eventAdapter.notifyDataSetChanged();
+                    handler.postDelayed(this,1000);
+                }
+            }
+        },2000);
+    }
+
+    private void initData(){
+        for(int i = 0; i < 30; i++){
+            eventList.add(new EventBase("点击" + (i + 1),1000,false,10));
+        }
+        eventAdapter.notifyDataSetChanged();
     }
 
     //判断自定义辅助功能服务是否开启
@@ -103,5 +153,11 @@ public class SimulatedClick extends Activity {
     public boolean onTouchEvent(MotionEvent event) {
         textView.setText(event.getRawX() + "," + event.getRawY());
         return super.onTouchEvent(event);
+    }
+
+    @Override
+    public boolean onTouch(View view, MotionEvent event) {
+        textView.setText(event.getRawX() + "," + event.getRawY());
+        return false;
     }
 }

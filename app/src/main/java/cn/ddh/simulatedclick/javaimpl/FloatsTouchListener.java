@@ -3,8 +3,6 @@ package cn.ddh.simulatedclick.javaimpl;
 import android.view.MotionEvent;
 import android.view.View;
 
-import cn.ddh.simulatedclick.R;
-
 public class FloatsTouchListener implements View.OnTouchListener {
 
     private int x;

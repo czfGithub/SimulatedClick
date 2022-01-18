@@ -10,6 +10,7 @@ import android.graphics.Point;
 import android.os.Build;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
@@ -42,12 +43,13 @@ public class FloatingsService extends AccessibilityService implements FloatsTouc
     private AlertDialog addViewDialog;
     private View parentView;
 
-    private List<EventBase> eventList = new ArrayList<>();
-    private EventsAdapter eventAdapter = new EventsAdapter(this, eventList);
+    private List<EventBase> eventList;
+    private EventsAdapter eventAdapter;
 
     private int currentTaskPos = -1;
 
     private ImageView ivFun;
+    private ImageView ivStop;
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent accessibilityEvent) {
@@ -78,13 +80,15 @@ public class FloatingsService extends AccessibilityService implements FloatsTouc
         ImageView ivAddIcon = parentView.findViewById(R.id.iv_add);
         rvContent = parentView.findViewById(R.id.rv_content);
         ivFun = parentView.findViewById(R.id.iv_fun);
-
+        ivStop = parentView.findViewById(R.id.iv_stop);
         addViewDialog = new AddsViewDialogBuilder(this, this).create();
-        ivAddIcon.setOnTouchListener(new FloatsTouchListener(this));
-        ivFun.setOnTouchListener(new FloatsTouchListener(this));
+//        ivAddIcon.setOnTouchListener(new FloatsTouchListener(this));
+//        ivFun.setOnTouchListener(new FloatsTouchListener(this));
 //        rvContent.setOnTouchListener(new FloatsTouchListener(this));
         linearLayoutManager = new LinearLayoutManager(this, RecyclerView.VERTICAL, false);
         rvContent.setLayoutManager(linearLayoutManager);
+        eventList = new ArrayList<>();
+        eventAdapter = new EventsAdapter(this, eventList);
         rvContent.setAdapter(eventAdapter);
         changeStatusUI();
 
@@ -128,19 +132,39 @@ public class FloatingsService extends AccessibilityService implements FloatsTouc
         ivFun.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (taskIng) {
-                    stopTask();
-                    toast("所有任务已取消执行");
+//                if (taskIng) {
+//                    stopTask();
+//                    toast("所有任务已取消执行");
+//                } else {
+//                    if (eventList.size() > 0) {
+//                        currentTaskPos = 0;
+//                        startTask();
+//                        taskIng = true;
+//                    } else {
+//                        toast("没有任务可以执行");
+//                    }
+//                }
+                if (eventList.size() > 0) {
+                    currentTaskPos = 0;
+                    startTask();
+                    taskIng = true;
                 } else {
-                    if (eventList.size() > 0) {
-                        currentTaskPos = 0;
-                        startTask();
-                        taskIng = true;
-                    } else {
-                        toast("没有任务可以执行");
-                    }
+                    toast("没有任务可以执行");
                 }
                 changeStatusUI();
+            }
+        });
+
+        ivStop.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if(!taskIng){
+                    return true;
+                }
+                stopTask();
+                toast("所有任务已取消执行");
+                changeStatusUI();
+                return true;
             }
         });
     }
@@ -150,9 +174,9 @@ public class FloatingsService extends AccessibilityService implements FloatsTouc
             EventBase eventBase = eventList.get(currentTaskPos);
             eventBase.setTasking();
 //            eventAdapter.notifyDataSetChanged();
-//            eventAdapter.notifyItemChanged(currentTaskPos);
+            eventAdapter.notifyItemChanged(currentTaskPos);
             if(currentTaskPos > linearLayoutManager.findLastVisibleItemPosition()){
-                rvContent.scrollToPosition(currentTaskPos - linearLayoutManager.findLastVisibleItemPosition());
+                rvContent.scrollToPosition(currentTaskPos);
             }
             viewModel.toWork(eventBase);
         } else {
@@ -179,10 +203,17 @@ public class FloatingsService extends AccessibilityService implements FloatsTouc
     }
 
     private void changeStatusUI(){
-        if (taskIng){
-            ivFun.setImageResource( R.mipmap.icon_puse);
+//        if (taskIng){
+//            ivFun.setImageResource( R.mipmap.icon_puse);
+//        }else{
+//            ivFun.setImageResource(R.mipmap.icon_play);
+//        }
+        if(taskIng){
+            ivStop.setVisibility(View.VISIBLE);
+            ivFun.setVisibility(View.GONE);
         }else{
-            ivFun.setImageResource(R.mipmap.icon_play);
+            ivStop.setVisibility(View.GONE);
+            ivFun.setVisibility(View.VISIBLE);
         }
     }
 
@@ -315,7 +346,7 @@ public class FloatingsService extends AccessibilityService implements FloatsTouc
         Path path = new Path();
         path.moveTo(point.x, point.y);
         GestureDescription gestureDescription = new GestureDescription.Builder()
-                .addStroke(new GestureDescription.StrokeDescription(path, 0, 5))
+                .addStroke(new GestureDescription.StrokeDescription(path, 0, 50))
                 .build();
         dispatchGesture(gestureDescription, new GestureResultCallback() {
             @Override
